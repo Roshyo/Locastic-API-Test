@@ -19,6 +19,9 @@
     "api-platform/schema-generator": {
         "version": "v2.1.0"
     },
+    "behat/transliterator": {
+        "version": "v1.2.0"
+    },
     "composer/semver": {
         "version": "1.5.0"
     },
@@ -134,6 +137,9 @@
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },
+    "jms/metadata": {
+        "version": "2.1.0"
+    },
     "league/html-to-markdown": {
         "version": "4.8.2"
     },
@@ -187,6 +193,15 @@
     },
     "ralouphie/getallheaders": {
         "version": "3.0.3"
+    },
+    "symfony/apache-pack": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.0",
+            "ref": "c82bead70f9a4f656354a193df7bf0ca2114efa0"
+        }
     },
     "symfony/asset": {
         "version": "v4.3.4"
@@ -252,6 +267,9 @@
             ".env"
         ]
     },
+    "symfony/form": {
+        "version": "v4.3.5"
+    },
     "symfony/framework-bundle": {
         "version": "4.2",
         "recipe": {
@@ -286,6 +304,9 @@
     "symfony/inflector": {
         "version": "v4.3.4"
     },
+    "symfony/intl": {
+        "version": "v4.3.5"
+    },
     "symfony/maker-bundle": {
         "version": "1.0",
         "recipe": {
@@ -315,6 +336,9 @@
     },
     "symfony/options-resolver": {
         "version": "v4.3.4"
+    },
+    "symfony/polyfill-intl-icu": {
+        "version": "v1.12.0"
     },
     "symfony/polyfill-intl-idn": {
         "version": "v1.12.0"
@@ -388,6 +412,9 @@
     "symfony/stopwatch": {
         "version": "v4.3.4"
     },
+    "symfony/templating": {
+        "version": "v4.3.5"
+    },
     "symfony/translation-contracts": {
         "version": "v1.1.6"
     },
@@ -449,6 +476,15 @@
     },
     "twig/twig": {
         "version": "v2.11.3"
+    },
+    "vich/uploader-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "c4f5755b37fb65b9c6a3cbdae91205c15a137ed4"
+        }
     },
     "webmozart/assert": {
         "version": "1.5.0"
