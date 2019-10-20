@@ -50,10 +50,15 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
-     *
-     * @Groups({"user:read", "user:write"})
      */
     private $password;
+
+    /**
+     * @var string Password
+     *
+     * @Groups({"user:write"})
+     */
+    private $plainPassword;
 
     /**
      * @ORM\Column(type="string", length=127)
@@ -80,9 +85,15 @@ class User implements UserInterface
      */
     private $blogPosts;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserVerificationRequest", mappedBy="user", orphanRemoval=true)
+     */
+    private $verificationRequests;
+
     public function __construct()
     {
         $this->blogPosts = new ArrayCollection();
+        $this->verificationRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -212,6 +223,49 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($blogPost->getOwner() === $this) {
                 $blogPost->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserVerificationRequest[]
+     */
+    public function getUserVerificationRequests(): Collection
+    {
+        return $this->verificationRequests;
+    }
+
+    public function addUserVerificationRequest(UserVerificationRequest $userVerificationRequest): self
+    {
+        if (!$this->verificationRequests->contains($userVerificationRequest)) {
+            $this->verificationRequests[] = $userVerificationRequest;
+            $userVerificationRequest->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserVerificationRequest(UserVerificationRequest $userVerificationRequest): self
+    {
+        if ($this->verificationRequests->contains($userVerificationRequest)) {
+            $this->verificationRequests->removeElement($userVerificationRequest);
+            // set the owning side to null (unless already changed)
+            if ($userVerificationRequest->getUser() === $this) {
+                $userVerificationRequest->setUser(null);
             }
         }
 

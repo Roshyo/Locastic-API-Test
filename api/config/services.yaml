@@ -25,3 +25,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    app.listener.user_password_encoder:
+        class: App\Event\Listener\UserPasswordEncoderListener
+        arguments:
+            - '@security.user_password_encoder.generic'
+        tags:
+            - { name: doctrine.event_listener, event: preUpdate }
+            - { name: doctrine.event_listener, event: prePersist }

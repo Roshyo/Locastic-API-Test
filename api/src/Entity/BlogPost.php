@@ -4,9 +4,14 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     normalizationContext={"groups"={"blog_post:read"}},
+ *     denormalizationContext={"groups"={"blog_post:write"}},
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\BlogPostRepository")
  */
 class BlogPost
@@ -15,27 +20,44 @@ class BlogPost
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @Groups({"blog_post:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @Groups({"blog_post:read", "blog_post:write"})
+     * @Assert\NotBlank()
+     * @Assert\Length(max=255)
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
+     *
+     * @Groups({"blog_post:read", "blog_post:write"})
+     * @Assert\NotBlank()
      */
     private $content;
 
     /**
      * @ORM\Column(type="datetime")
+     *
+     * @Groups({"blog_post:read", "blog_post:write"})
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
      */
     private $publicationDate;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="blogPosts")
      * @ORM\JoinColumn(nullable=false)
+     *
+     * @Groups({"blog_post:read"})
+     *
+     * @Assert\Valid()
      */
     private $owner;
 
