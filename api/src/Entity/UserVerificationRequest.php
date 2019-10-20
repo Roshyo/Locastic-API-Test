@@ -11,6 +11,32 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 /**
  * @ApiResource(
  *     normalizationContext={"groups"={"user_verification_request:read"}},
+ *     collectionOperations={
+ *         "post"={
+ *             "controller"=CreateUserVerificationRequestAction::class,
+ *             "openapi_context"={
+ *                 "requestBody"={
+ *                     "content"={
+ *                         "multipart/form-data"={
+ *                             "schema"={
+ *                                 "type"="object",
+ *                                 "properties"={
+ *                                     "IDImage"={
+ *                                         "type"="string",
+ *                                         "format"="binary"
+ *                                     },
+ *                                     "comment"={
+ *                                         "type"="string",
+ *                                         "format"="text"
+ *                                     }
+ *                                 }
+ *                             }
+ *                         }
+ *                     }
+ *                 }
+ *             }
+ *         }
+ *     }
  * )
  * @ORM\Entity(repositoryClass="App\Repository\UserVerificationRequestRepository")
  */
@@ -46,7 +72,7 @@ class UserVerificationRequest
     private $comment;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userVerificationRequests")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="verificationRequests")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
@@ -107,5 +133,15 @@ class UserVerificationRequest
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getIDImage(): ?File
+    {
+        return $this->IDImage;
+    }
+
+    public function setIDImage(?File $IDImage): void
+    {
+        $this->IDImage = $IDImage;
     }
 }
