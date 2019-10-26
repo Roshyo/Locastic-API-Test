@@ -23,4 +23,11 @@ class BlogPostSpec extends ObjectBehavior
         $this->setContent('My awesome content');
         $this->getContent()->shouldReturn('My awesome content');
     }
+
+    public function it_has_publication_date()
+    {
+        $date = new \DateTime();
+        $this->setPublicationDate($date);
+        $this->getPublicationDate()->shouldReturn($date);
+    }
 }
