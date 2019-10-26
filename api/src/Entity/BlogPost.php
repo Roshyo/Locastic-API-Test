@@ -11,7 +11,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource(
  *     normalizationContext={"groups"={"blog_post:read"}},
  *     denormalizationContext={"groups"={"blog_post:write"}},
+ *     itemOperations={
+ *         "put"={
+ *             "access_control"="is_granted('ROLE_BLOGGER') and object.getOwner() == user",
+ *         },
+ *         "get"={},
+ *         "delete"={
+ *             "access_control"="is_granted('ROLE_ADMIN')",
+ *         },
+ *     }
  * )
+ *
  * @ORM\Entity(repositoryClass="App\Repository\BlogPostRepository")
  */
 class BlogPost

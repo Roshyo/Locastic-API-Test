@@ -40,3 +40,10 @@ services:
             - '@security.token_storage'
         tags:
             - { name: doctrine.event_listener, event: prePersist }
+
+    app.listener.blog_post:
+        class: App\Event\Listener\BlogPostListener
+        arguments:
+            - '@security.token_storage'
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }

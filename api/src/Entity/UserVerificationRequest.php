@@ -137,6 +137,8 @@ class UserVerificationRequest
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"user_verification_request:read", "user_verification_request_decline:write"})
+     *
+     * @Assert\Type(type="string")
      */
     private $rejectionReason;
 
