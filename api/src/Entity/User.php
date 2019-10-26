@@ -45,7 +45,7 @@ class User implements UserInterface
      *
      * @Groups({"user:read"})
      */
-    private $roles = [];
+    private $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
@@ -82,11 +82,15 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\BlogPost", mappedBy="owner")
+     *
+     * @Assert\NotBlank()
      */
     private $blogPosts;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\UserVerificationRequest", mappedBy="user", orphanRemoval=true)
+     *
+     * @Assert\NotBlank()
      */
     private $verificationRequests;
 
@@ -142,6 +146,27 @@ class User implements UserInterface
         $this->roles = $roles;
 
         return $this;
+    }
+
+    public function addRole(string $role): bool
+    {
+        if (!\in_array($role, $this->getRoles())) {
+            $this->roles[] = $role;
+        }
+
+        return true;
+    }
+
+    public function removeRole(string $role): bool
+    {
+        $index = \array_search($role, $this->getRoles());
+        if ($index === false) {
+            return false;
+        }
+
+        unset($this->roles[$index]);
+
+        return true;
     }
 
     /**

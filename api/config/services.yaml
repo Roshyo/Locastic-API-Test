@@ -33,3 +33,10 @@ services:
         tags:
             - { name: doctrine.event_listener, event: preUpdate }
             - { name: doctrine.event_listener, event: prePersist }
+
+    app.listener.user_verification_request:
+        class: App\Event\Listener\UserVerificationRequestListener
+        arguments:
+            - '@security.token_storage'
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }

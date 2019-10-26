@@ -2,43 +2,63 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\AcceptUserVerficationRequestController;
+use App\Controller\DeclineUserVerficationRequestController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ApiResource(
  *     normalizationContext={"groups"={"user_verification_request:read"}},
+ *     denormalizationContext={"groups"={"user_verification_request:write", "user_verification_request_decline:write"}},
  *     collectionOperations={
+ *         "get"={
+ *             "security_post_denormalize"="is_granted('ROLE_USER')",
+ *             "denormalization_context"={"groups"={"user_verification_request:read"}},
+ *         },
  *         "post"={
- *             "controller"=CreateUserVerificationRequestAction::class,
- *             "openapi_context"={
- *                 "requestBody"={
- *                     "content"={
- *                         "multipart/form-data"={
- *                             "schema"={
- *                                 "type"="object",
- *                                 "properties"={
- *                                     "IDImage"={
- *                                         "type"="string",
- *                                         "format"="binary"
- *                                     },
- *                                     "comment"={
- *                                         "type"="string",
- *                                         "format"="text"
- *                                     }
- *                                 }
- *                             }
- *                         }
- *                     }
- *                 }
- *             }
- *         }
+ *             "access_control"="is_granted('ROLE_USER') and is_granted('ROLE_BLOGGER') === false",
+ *             "denormalization_context"={"groups"={"user_verification_request:write"}},
+ *         },
+ *     },
+ *     itemOperations={
+ *         "decline_request"={
+ *             "access_control"="is_granted('ROLE_ADMIN')",
+ *             "method"="PUT",
+ *             "path"="/user_verification_requests/{id}/decline",
+ *             "controller"=DeclineUserVerficationRequestController::class,
+ *             "deserialize"=false,
+ *             "denormalization_context"={"groups"={"user_verification_request_decline:write"}}
+ *         },
+ *         "accept_request"={
+ *             "access_control"="is_granted('ROLE_ADMIN')",
+ *             "method"="PUT",
+ *             "path"="/user_verification_requests/{id}/accept",
+ *             "controller"=AcceptUserVerficationRequestController::class,
+ *             "deserialize"=false,
+ *             "denormalization_context"={"groups"={}}
+ *         },
+ *         "get"={
+ *             "access_control"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getUser() == user)",
+ *             "denormalization_context"={"groups"={"user_verification_request:read"}},
+ *         },
+ *         "put"={
+ *             "access_control"="is_granted('ROLE_USER') and object.getUser() == user and object.getStatus() == 'requested'",
+ *             "denormalization_context"={"groups"={"user_verification_request:write"}},
+ *         },
  *     }
  * )
+ * @ApiFilter(SearchFilter::class, properties={"status": "exact", "user": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"createdAt": "ASC"})
+ *
  * @ORM\Entity(repositoryClass="App\Repository\UserVerificationRequestRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class UserVerificationRequest
 {
@@ -50,37 +70,75 @@ class UserVerificationRequest
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @Groups({"user_verification_request:read"})
      */
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=511)
+     * @ORM\Column(type="string", length=511, nullable=true)
      */
     private $IDImagePath;
 
     /**
      * @var File|null
-     *
-     * @Assert\NotNull()
-     * @Vich\UploadableField(mapping="user_verification_request", fileNameProperty="IDImagePath")
      */
     private $IDImage;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"user_verification_request:read", "user_verification_request:write"})
+     *
+     * @Assert\Type(type="string")
      */
     private $comment;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="verificationRequests")
      * @ORM\JoinColumn(nullable=false)
+     *
+     * @Groups({"user_verification_request:read"})
      */
     private $user;
 
     /**
      * @ORM\Column(type="string", length=63)
+     *
+     * @Groups({"user_verification_request:read"})
+     *
+     * @Assert\Type(type="string")
      */
     private $status = self::STATUS_REQUESTED;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime")
+     *
+     * @Groups({"user_verification_request:read"})
+     *
+     * @Assert\DateTime()
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime")
+     *
+     * @Groups({"user_verification_request:read"})
+     *
+     * @Assert\DateTime()
+     */
+    private $updatedAt;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"user_verification_request:read", "user_verification_request_decline:write"})
+     */
+    private $rejectionReason;
 
     public function getId(): ?int
     {
@@ -140,8 +198,63 @@ class UserVerificationRequest
         return $this->IDImage;
     }
 
-    public function setIDImage(?File $IDImage): void
+    public function setIDImage(?File $IDImage): self
     {
         $this->IDImage = $IDImage;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): \DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTime $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     */
+    public function defineCreationDate(): void
+    {
+        $this->setCreatedAt(new \DateTime());
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     */
+    public function defineModificationDate(): void
+    {
+        $this->setUpdatedAt(new \DateTime());
+    }
+
+    public function getRejectionReason(): ?string
+    {
+        return $this->rejectionReason;
+    }
+
+    public function setRejectionReason(?string $rejectionReason): self
+    {
+        $this->rejectionReason = $rejectionReason;
+
+        return $this;
     }
 }

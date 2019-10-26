@@ -22,6 +22,7 @@ final class ResolveUserVerificationRequestContentUrlSubscriber implements EventS
 
     public static function getSubscribedEvents(): array
     {
+        return [];
         return [KernelEvents::VIEW => ['onPreSerialize', EventPriorities::PRE_SERIALIZE],];
     }
 
